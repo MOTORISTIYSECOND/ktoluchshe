@@ -1,0 +1,892 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Who is the Best?</title>
+    <style>
+        :root {
+            --primary-color: #4285F4;
+            --wrong-color: #ff416c;
+            --correct-color: #00b09b;
+            --text-light: rgba(255,255,255,0.9);
+            --text-muted: rgba(255,255,255,0.7);
+            --active-user-border: #FFD700;
+            --active-user-shadow: 0 0 15px rgba(255, 215, 0, 0.7);
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            background: linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab);
+            background-size: 400% 400%;
+            animation: gradientBG 15s ease infinite;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        @keyframes gradientBG {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        body::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiPjxkZWZzPjxwYXR0ZXJuIGlkPSJwYXR0ZXJuIiB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHBhdHRlcm5Vbml0cz0idXNlclNwYWNlT25Vc2UiIHBhdHRlcm5UcmFuc2Zvcm09InJvdGF0ZSg0NSkiPjxyZWN0IHdpZHRoPSIyMCIgaGVpZ2h0PSIyMCIgZmlsbD0icmdiYSgyNTUsMjU1LDI1NSwwLjAzKSIvPjwvcGF0dGVybj48L2RlZnM+PHJlY3QgZmlsbD0idXJsKCNwYXR0ZXJuKSIgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIvPjwvc3ZnPg==');
+            opacity: 0.4;
+            z-index: -1;
+        }
+
+        .header {
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            right: 15px;
+            z-index: 10;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .discord-link {
+            position: fixed;
+            bottom: 15px;
+            right: 15px;
+            width: 40px;
+            height: 40px;
+            background-color: #5865F2;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+            transition: all 0.3s;
+            z-index: 10;
+        }
+
+        .discord-link:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 15px rgba(0,0,0,0.3);
+            background-color: #4752C4;
+        }
+
+        .discord-icon {
+            width: 24px;
+            height: 24px;
+            filter: brightness(0) invert(1);
+        }
+        
+        .title {
+            font-size: 22px;
+            font-weight: bold;
+            color: var(--text-light);
+            text-shadow: 2px 2px 8px rgba(0,0,0,0.5);
+            transform: perspective(300px) rotateX(10deg);
+            margin-bottom: 3px;
+            letter-spacing: 0.5px;
+        }
+        
+        .powered-by {
+            font-size: 9px;
+            color: var(--text-muted);
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+        }
+        
+        .container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-grow: 1;
+            gap: 20px;
+            padding: 80px 15px 15px;
+            flex-direction: column;
+            position: relative;
+            z-index: 1;
+            width: 100%;
+        }
+        
+        .boxes-wrapper {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            width: 100%;
+            max-width: 500px;
+        }
+        
+        .user-box {
+            width: 100%;
+            height: 280px;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background-color: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(5px);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s ease;
+            color: white;
+            padding: 15px;
+            position: relative;
+        }
+        
+        .user-box:hover {
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3);
+            transform: translateY(-3px);
+            background-color: rgba(255, 255, 255, 0.25);
+        }
+        
+        .user-box.empty {
+            color: var(--text-muted);
+            cursor: pointer;
+        }
+        
+        .user-box.empty:hover {
+            border-color: rgba(255,255,255,0.6);
+        }
+        
+        .user-box.active {
+            border: 3px solid var(--active-user-border);
+            box-shadow: var(--active-user-shadow);
+            transform: scale(1.02);
+            transition: all 0.3s ease;
+        }
+        
+        .user-avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background-color: rgba(255,255,255,0.2);
+            margin-bottom: 15px;
+            overflow: hidden;
+            border: 2px solid rgba(255,255,255,0.4);
+        }
+        
+        .user-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .user-name {
+            font-size: 16px;
+            font-weight: bold;
+            margin-bottom: 5px;
+            color: var(--text-light);
+            text-shadow: 1px 1px 3px rgba(0,0,0,0.3);
+            text-align: center;
+        }
+        
+        .user-email {
+            color: var(--text-muted);
+            font-size: 13px;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+        
+        footer {
+            text-align: center;
+            padding: 12px 15px;
+            padding-right: 60px;
+            background-color: rgba(0, 0, 0, 0.3);
+            color: white;
+            backdrop-filter: blur(5px);
+            position: relative;
+            z-index: 1;
+            font-size: 12px;
+        }
+        
+        .add-icon {
+            font-size: 40px;
+            margin-bottom: 10px;
+            color: var(--text-muted);
+        }
+        
+        .buttons-container {
+            display: flex;
+            gap: 15px;
+            margin-top: 20px;
+            width: 100%;
+            max-width: 500px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        
+        .action-button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 25px;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            flex: 1;
+            min-width: 120px;
+            max-width: 200px;
+        }
+        
+        .action-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+        }
+        
+        .wrong-button {
+            background: linear-gradient(45deg, var(--wrong-color), #ff4b2b);
+        }
+        
+        .wrong-button:hover {
+            background: linear-gradient(45deg, #ff4b2b, var(--wrong-color));
+        }
+        
+        .correct-button {
+            background: linear-gradient(45deg, var(--correct-color), #96c93d);
+        }
+        
+        .correct-button:hover {
+            background: linear-gradient(45deg, #96c93d, var(--correct-color));
+        }
+        
+        .start-button {
+            background: linear-gradient(45deg, #8E2DE2, #4A00E0);
+            margin-top: 20px;
+            display: none;
+        }
+        
+        .start-button:hover {
+            background: linear-gradient(45deg, #4A00E0, #8E2DE2);
+        }
+
+        .rules-button {
+            background: linear-gradient(45deg, #FFA500, #FF8C00);
+            margin-top: 10px;
+        }
+        
+        .rules-button:hover {
+            background: linear-gradient(45deg, #FF8C00, #FFA500);
+        }
+        
+        .google-btn {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            display: flex;
+            align-items: center;
+            background-color: white;
+            color: var(--primary-color);
+            border: none;
+            padding: 8px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            z-index: 10;
+            max-width: 180px;
+        }
+        
+        .google-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(0,0,0,0.15);
+        }
+        
+        .google-icon {
+            width: 16px;
+            height: 16px;
+            margin-right: 8px;
+        }
+
+        button:not(.google-btn):not(.action-button) {
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: 1px solid rgba(255,255,255,0.4);
+            padding: 5px 12px;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 12px;
+        }
+
+        button:not(.google-btn):not(.action-button):hover {
+            background: rgba(255,255,255,0.3);
+        }
+
+        /* Модальное окно */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.7);
+            z-index: 100;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background: rgba(255,255,255,0.9);
+            padding: 25px;
+            border-radius: 10px;
+            width: 90%;
+            max-width: 400px;
+            text-align: center;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+        }
+
+        .modal h2 {
+            color: #333;
+            margin-bottom: 20px;
+        }
+
+        .modal input {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 20px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+            text-align: center;
+        }
+
+        .modal button {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+
+        .modal button:hover {
+            background-color: #3367d6;
+        }
+
+        .rules-content {
+            text-align: left;
+            color: #333;
+            margin-bottom: 20px;
+            max-height: 60vh;
+            overflow-y: auto;
+            padding-right: 10px;
+        }
+
+        .rules-content p {
+            margin-bottom: 10px;
+            line-height: 1.5;
+        }
+
+        .rules-content ul {
+            margin-left: 20px;
+            margin-bottom: 15px;
+        }
+
+        .rules-content li {
+            margin-bottom: 8px;
+        }
+
+        /* Балловая шкала */
+        .score-container {
+            width: 100%;
+            margin-top: 15px;
+            display: none;
+        }
+
+        .score-bar {
+            height: 20px;
+            background-color: rgba(255,255,255,0.2);
+            border-radius: 10px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .score-progress {
+            height: 100%;
+            background: linear-gradient(90deg, #00b09b, #96c93d);
+            width: 0%;
+            transition: width 0.5s ease;
+        }
+
+        .score-text {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            text-align: center;
+            color: white;
+            font-weight: bold;
+            font-size: 12px;
+            line-height: 20px;
+        }
+
+        /* Адаптация для планшетов и десктопов */
+        @media (min-width: 600px) {
+            .title {
+                font-size: 24px;
+            }
+
+            .powered-by {
+                font-size: 10px;
+            }
+
+            .boxes-wrapper {
+                flex-direction: row;
+                gap: 30px;
+            }
+
+            .user-box {
+                height: 320px;
+            }
+
+            .user-avatar {
+                width: 90px;
+                height: 90px;
+            }
+
+            .google-btn {
+                padding: 10px 15px;
+                font-size: 13px;
+            }
+
+            .action-button {
+                font-size: 15px;
+                padding: 12px 25px;
+            }
+        }
+
+        @media (min-width: 768px) {
+            .header {
+                top: 20px;
+                left: 20px;
+            }
+
+            .title {
+                font-size: 28px;
+            }
+
+            .container {
+                padding-top: 100px;
+            }
+
+            .boxes-wrapper {
+                gap: 50px;
+            }
+
+            .user-box {
+                width: 250px;
+                height: 350px;
+            }
+
+            .user-avatar {
+                width: 100px;
+                height: 100px;
+            }
+
+            .user-name {
+                font-size: 18px;
+            }
+
+            .google-btn {
+                padding: 10px 20px;
+                font-size: 14px;
+            }
+        }
+
+        /* Ландшафтная ориентация на мобильных */
+        @media (max-height: 500px) and (orientation: landscape) {
+            .container {
+                padding-top: 70px;
+                flex-direction: row;
+                align-items: flex-start;
+            }
+
+            .boxes-wrapper {
+                flex-direction: row;
+            }
+
+            .user-box {
+                height: 250px;
+            }
+
+            .buttons-container {
+                margin-top: 10px;
+                flex-direction: column;
+                width: auto;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="title">Who is the Best?</div>
+        <div class="powered-by">powered by MOTORISTIY`s EMPIRE</div>
+    </div>
+    
+    <button class="google-btn" onclick="handleGoogleSignIn()">
+        <img class="google-icon" src="https://upload.wikimedia.org/wikipedia/commons/5/53/Google_%22G%22_Logo.svg" alt="Google logo">
+        Войти через Google
+    </button>
+    
+    <div class="container">
+        <div class="boxes-wrapper">
+            <div class="user-box empty" id="box1" onclick="addUser(this)">
+                <div class="add-icon">+</div>
+                <div>Добавить пользователя</div>
+                <div class="score-container">
+                    <div class="score-bar">
+                        <div class="score-progress"></div>
+                        <div class="score-text">0/0</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="user-box empty" id="box2" onclick="addUser(this)">
+                <div class="add-icon">+</div>
+                <div>Добавить пользователя</div>
+                <div class="score-container">
+                    <div class="score-bar">
+                        <div class="score-progress"></div>
+                        <div class="score-text">0/0</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="buttons-container">
+            <button class="action-button wrong-button" id="wrongBtn" onclick="handleWrong()">НЕПРАВИЛЬНО</button>
+            <button class="action-button correct-button" id="correctBtn" onclick="handleCorrect()">ПРАВИЛЬНО</button>
+            <button class="action-button start-button" id="startGameBtn" onclick="showMaxScoreModal()">Начать игру</button>
+            <button class="action-button rules-button" onclick="showRulesModal()">Правила игры</button>
+        </div>
+    </div>
+    
+    <!-- Модальное окно для выбора максимального балла -->
+    <div class="modal" id="maxScoreModal">
+        <div class="modal-content">
+            <h2>Выберите максимальный балл</h2>
+            <input type="number" id="maxScoreInput" min="10" max="100" value="50" placeholder="От 10 до 100">
+            <button onclick="startGame()">Начать</button>
+        </div>
+    </div>
+    
+    <!-- Модальное окно с правилами игры -->
+    <div class="modal" id="rulesModal">
+        <div class="modal-content">
+            <h2>Правила игры</h2>
+            <div class="rules-content">
+                <p><strong>Цель игры:</strong> Определить, кто из двух игроков лучше справляется с заданиями.</p>
+                
+                <p><strong>Как играть:</strong></p>
+                <ul>
+                    <li>Добавьте двух игроков, нажав на кнопки "Добавить пользователя"</li>
+                    <li>Нажмите "Начать игру" и выберите максимальное количество баллов (от 10 до 100)</li>
+                    <li>Игроки отвечают по очереди (выделяются золотой рамкой)</li>
+                    <li>Во время своего хода нажимайте кнопки:
+                        <ul>
+                            <li>"Правильно" - добавляет 10 баллов текущему игроку</li>
+                            <li>"Неправильно" - отнимает 5 баллов текущему игроку</li>
+                        </ul>
+                    </li>
+                    <li>После ответа ход переходит к другому игроку</li>
+                    <li>Игра продолжается, пока один из игроков не наберет максимальное количество баллов</li>
+                    <li>Победителем становится игрок, первым набравший максимальное количество баллов</li>
+                </ul>
+                
+                <p><strong>Дополнительные возможности:</strong></p>
+                <ul>
+                    <li>Вы можете удалить игрока и добавить нового в любой момент</li>
+                    <li>Чтобы начать новую игру, просто нажмите "Начать игру" снова</li>
+                    <li>Максимальное количество баллов можно менять перед каждой новой игрой</li>
+                </ul>
+            </div>
+            <button onclick="closeRulesModal()">Понятно</button>
+        </div>
+    </div>
+    
+    <footer>
+    © 2025 Кто лучше друг. Все права защищены.
+    </footer>
+
+    <a href="https://discord.gg/ваша_ссылка" class="discord-link" target="_blank">
+    <img src="https://assets-global.website-files.com/6257adef93867e50d84d30e2/636e0a6a49cf127bf92de1e2_icon_clyde_blurple_RGB.png" alt="Discord" class="discord-icon">
+    </a>
+    
+    <script>
+        // Примеры пользователей (в реальном приложении можно получать из базы данных)
+        const sampleUsers = [
+            {
+                name: "Иван Иванов",
+                email: "ivan@example.com",
+                avatar: "https://randomuser.me/api/portraits/men/1.jpg"
+            },
+            {
+                name: "Мария Петрова",
+                email: "maria@example.com",
+                avatar: "https://randomuser.me/api/portraits/women/1.jpg"
+            },
+            {
+                name: "Алексей Смирнов",
+                email: "alex@example.com",
+                avatar: "https://randomuser.me/api/portraits/men/2.jpg"
+            },
+            {
+                name: "Елена Сидорова",
+                email: "elena@example.com",
+                avatar: "https://randomuser.me/api/portraits/women/2.jpg"
+            }
+        ];
+
+        let maxScore = 0;
+        let scores = [0, 0];
+        let gameStarted = false;
+        let currentPlayerIndex = 0; // Текущий игрок (0 или 1)
+        let canAnswer = false; // Может ли текущий игрок отвечать
+        
+        function addUser(box) {
+            // Если в боксе уже есть пользователь, не делаем ничего
+            if (!box.classList.contains('empty')) return;
+            
+            // Находим случайного пользователя из списка
+            const randomUser = sampleUsers[Math.floor(Math.random() * sampleUsers.length)];
+            
+            // Заполняем бокс данными пользователя
+            box.innerHTML = `
+                <div class="user-avatar">
+                    <img src="${randomUser.avatar}" alt="${randomUser.name}">
+                </div>
+                <div class="user-name">${randomUser.name}</div>
+                <div class="user-email">${randomUser.email}</div>
+                <button onclick="removeUser(event, this.parentNode)">Удалить</button>
+                <div class="score-container">
+                    <div class="score-bar">
+                        <div class="score-progress"></div>
+                        <div class="score-text">0/${maxScore}</div>
+                    </div>
+                </div>
+            `;
+            
+            box.classList.remove('empty');
+            
+            // Проверяем, можно ли показать кнопку "Начать игру"
+            checkStartButton();
+        }
+        
+        function removeUser(event, box) {
+            // Останавливаем всплытие события, чтобы не сработал addUser
+            event.stopPropagation();
+            
+            // Возвращаем бокс в исходное состояние
+            box.innerHTML = `
+                <div class="add-icon">+</div>
+                <div>Добавить пользователя</div>
+                <div class="score-container">
+                    <div class="score-bar">
+                        <div class="score-progress"></div>
+                        <div class="score-text">0/0</div>
+                    </div>
+                </div>
+            `;
+            
+            box.classList.add('empty');
+            gameStarted = false;
+            resetPlayers();
+            
+            // Скрываем кнопку "Начать игру"
+            document.getElementById('startGameBtn').style.display = 'none';
+        }
+        
+        function resetPlayers() {
+            currentPlayerIndex = 0;
+            canAnswer = false;
+            document.querySelectorAll('.user-box').forEach(b => b.classList.remove('active'));
+        }
+        
+        function checkStartButton() {
+            const box1 = document.getElementById('box1');
+            const box2 = document.getElementById('box2');
+            const startBtn = document.getElementById('startGameBtn');
+            
+            if (!box1.classList.contains('empty') && !box2.classList.contains('empty') && !gameStarted) {
+                startBtn.style.display = 'block';
+            } else {
+                startBtn.style.display = 'none';
+            }
+        }
+        
+        function selectNextPlayer() {
+            // Снимаем выделение со всех
+            document.querySelectorAll('.user-box').forEach(b => b.classList.remove('active'));
+            
+            // Выбираем следующего игрока
+            currentPlayerIndex = (currentPlayerIndex + 1) % 2;
+            canAnswer = true;
+            
+            // Выделяем текущего игрока
+            document.querySelectorAll('.user-box')[currentPlayerIndex].classList.add('active');
+        }
+        
+        function handleAnswer(isCorrect) {
+            if (!gameStarted) {
+                alert("Сначала начните игру!");
+                return;
+            }
+            
+            if (!canAnswer) {
+                alert("Сейчас не ваш ход!");
+                return;
+            }
+            
+            if (isCorrect) {
+                scores[currentPlayerIndex] = Math.min(maxScore, scores[currentPlayerIndex] + 10);
+            } else {
+                scores[currentPlayerIndex] = Math.max(0, scores[currentPlayerIndex] - 5);
+            }
+            
+            updateScoreBars();
+            
+            // Блокируем ответы до следующего хода
+            canAnswer = false;
+            
+            // Проверяем окончание игры
+            if (!checkGameEnd()) {
+                // Через секунду переключаем игрока
+                setTimeout(selectNextPlayer, 1000);
+            }
+        }
+        
+        function handleCorrect() {
+            handleAnswer(true);
+        }
+        
+        function handleWrong() {
+            handleAnswer(false);
+        }
+        
+        function startGame() {
+            const maxScoreInput = document.getElementById('maxScoreInput');
+            maxScore = parseInt(maxScoreInput.value);
+            
+            // Проверка введенного значения
+            if (isNaN(maxScore)) {
+                alert('Пожалуйста, введите число');
+                return;
+            }
+            
+            if (maxScore < 10 || maxScore > 100) {
+                alert('Максимальный балл должен быть от 10 до 100');
+                return;
+            }
+            
+            // Проверяем, что оба игрока добавлены
+            const box1 = document.getElementById('box1');
+            const box2 = document.getElementById('box2');
+            if (box1.classList.contains('empty') || box2.classList.contains('empty')) {
+                alert('Добавьте двух игроков перед началом игры!');
+                return;
+            }
+            
+            // Закрываем модальное окно
+            document.getElementById('maxScoreModal').style.display = 'none';
+            
+            // Сбрасываем счет
+            scores = [0, 0];
+            gameStarted = true;
+            currentPlayerIndex = 0;
+            canAnswer = true;
+            
+            // Показываем балловые шкалы
+            const scoreContainers = document.querySelectorAll('.score-container');
+            scoreContainers.forEach(container => {
+                container.style.display = 'block';
+                const scoreText = container.querySelector('.score-text');
+                scoreText.textContent = `0/${maxScore}`;
+            });
+            
+            // Скрываем кнопку "Начать игру"
+            document.getElementById('startGameBtn').style.display = 'none';
+            
+            // Обновляем прогресс баров
+            updateScoreBars();
+            
+            // Выбираем первого игрока
+            selectNextPlayer();
+        }
+        
+        function updateScoreBars() {
+            const scoreBars = document.querySelectorAll('.score-progress');
+            const scoreTexts = document.querySelectorAll('.score-text');
+            
+            for (let i = 0; i < 2; i++) {
+                const percentage = (scores[i] / maxScore) * 100;
+                scoreBars[i].style.width = `${Math.min(percentage, 100)}%`;
+                scoreTexts[i].textContent = `${scores[i]}/${maxScore}`;
+                
+                // Меняем цвет если достигнут максимум
+                if (scores[i] >= maxScore) {
+                    scoreBars[i].style.background = 'linear-gradient(90deg, #ff416c, #ff4b2b)';
+                } else {
+                    scoreBars[i].style.background = 'linear-gradient(90deg, #00b09b, #96c93d)';
+                }
+            }
+        }
+        
+        function checkGameEnd() {
+            if (scores[0] >= maxScore || scores[1] >= maxScore) {
+                const winnerIndex = scores[0] >= maxScore ? 0 : 1;
+                const winnerName = document.querySelectorAll('.user-name')[winnerIndex].textContent;
+                alert(`Игра окончена! Победитель: ${winnerName}`);
+                gameStarted = false;
+                
+                // Показываем кнопку "Начать игру" снова
+                checkStartButton();
+                resetPlayers();
+                return true;
+            }
+            return false;
+        }
+        
+        function showMaxScoreModal() {
+            document.getElementById('maxScoreModal').style.display = 'flex';
+        }
+        
+        function showRulesModal() {
+            document.getElementById('rulesModal').style.display = 'flex';
+        }
+        
+        function closeRulesModal() {
+            document.getElementById('rulesModal').style.display = 'none';
+        }
+        
+        function handleGoogleSignIn() {
+            alert("Реализация входа через Google будет здесь");
+        }
+
+        // Оптимизация для мобильных устройств
+        document.addEventListener('touchstart', function() {}, false);
+    </script>
+    <a href="https://discord.gg/ваша_ссылка" class="discord-link" target="_blank">
+    <img src="https://assets-global.website-files.com/6257adef93867e50d84d30e2/636e0a6a49cf127bf92de1e2_icon_clyde_blurple_RGB.png" alt="Discord" class="discord-icon">
+    </a>
+</body>
+</html>
